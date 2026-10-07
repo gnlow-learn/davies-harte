@@ -32,8 +32,8 @@ const kernels = {
     exponential: (r: number) => (d: number) => Math.exp(-d/r),
 }
 
-const p32 = daviesHarte(256, 256, kernels.gaussian(1024))
+const p32 = daviesHarte(256, 256, kernels.gaussian(20))
 
 const plane = new FunPlane(256, 256, ([x, y]) => p32.get([x, y]))
-const png = plane.map(x => (x as number)*255).grayscale().toPng()
+const png = plane.map(x => 128*(1+Math.tanh(x as number))).grayscale().toPng()
 await Deno.writeFile("test.png", png)
