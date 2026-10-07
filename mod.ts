@@ -1,6 +1,5 @@
 import * as np from "https://esm.sh/numpy-ts@1.7.0"
 import { arr } from "https://gnlow.dev/util@0.1.2"
-import { FunPlane } from "https://gnlow.dev/plane@0.1.5"
 
 export const daviesHarte =
 (w: number, h: number, kernel: (d: number) => number) => {
@@ -26,14 +25,8 @@ export const daviesHarte =
     return rawField.slice(`0:${w}`, `0:${h}`)
 }
 
-const kernels = {
+export const kernels = {
     gaussian: (r: number) => (d: number) => Math.exp(-(d**2)/r**2),
     triangular: (r: number) => (d: number) => Math.max(0, 1-d/r),
     exponential: (r: number) => (d: number) => Math.exp(-d/r),
 }
-
-const p32 = daviesHarte(256, 256, kernels.gaussian(20))
-
-const plane = new FunPlane(256, 256, ([x, y]) => p32.get([x, y]))
-const png = plane.map(x => 128*(1+Math.tanh(x as number))).grayscale().toPng()
-await Deno.writeFile("test.png", png)
