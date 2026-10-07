@@ -3,12 +3,12 @@ import { arr } from "https://gnlow.dev/util@0.1.2"
 import { FunPlane } from "https://gnlow.dev/plane@0.1.5"
 
 export const daviesHarte =
-(w: number, h: number, r = 512) => {
+(w: number, h: number, kernel: (d: number) => number) => {
     const covData = arr(2*w).map(i => arr(2*h).map(j => {
         const dx = i <= w ? i : 2*w-i
         const dy = j <= h ? j : 2*h-j
         const dist = Math.hypot(dx, dy)
-        return Math.max(0, 1-dist/r)
+        return kernel(dist)
     }))
     const covGrid = np.array(covData)
 
@@ -26,7 +26,13 @@ export const daviesHarte =
     return rawField.slice(`0:${w}`, `0:${h}`)
 }
 
-const p32 = daviesHarte(256, 256)
+const kernels = {
+    gaussian: (r: number) => (d: number) => Math.exp(-(d**2)/r**2),
+    triangular: (r: number) => (d: number) => Math.max(0, 1-d/r),
+    exponential: (r: number) => (d: number) => Math.exp(-d/r),
+}
+
+const p32 = daviesHarte(256, 256, kernels.gaussian(1024))
 
 const plane = new FunPlane(256, 256, ([x, y]) => p32.get([x, y]))
 const png = plane.map(x => (x as number)*255).grayscale().toPng()
