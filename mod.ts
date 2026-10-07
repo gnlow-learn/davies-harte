@@ -1,8 +1,9 @@
 import * as np from "https://esm.sh/numpy-ts@1.7.0"
 import { arr } from "https://gnlow.dev/util@0.1.2"
+import { FunPlane } from "https://gnlow.dev/plane@0.1.5"
 
 export const daviesHarte =
-(w: number, h: number, r = 15) => {
+(w: number, h: number, r = 512) => {
     const covData = arr(2*w).map(i => arr(2*h).map(j => {
         const dx = i <= w ? i : 2*w-i
         const dy = j <= h ? j : 2*h-j
@@ -16,7 +17,7 @@ export const daviesHarte =
     const safeCov = np.clip(realCov, 0, null)
     const sqrtCov = np.sqrt(safeCov)
     
-    const noise = np.random.normal(0, 1, [2*w, 2*h])
+    const noise = np.random.normal(0, 1, [2*w, 2*h]) as np.NDArray<"float32">
     const noiseFft = np.fft.fft2(noise)
 
     const filteredFft = np.multiply(noiseFft, sqrtCov)
@@ -25,4 +26,8 @@ export const daviesHarte =
     return rawField.slice(`0:${w}`, `0:${h}`)
 }
 
-console.log(daviesHarte(32, 32))
+const p32 = daviesHarte(256, 256)
+
+const plane = new FunPlane(256, 256, ([x, y]) => p32.get([x, y]))
+const png = plane.map(x => (x as number)*255).grayscale().toPng()
+await Deno.writeFile("test.png", png)
