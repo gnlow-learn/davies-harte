@@ -2,7 +2,8 @@ import * as np from "https://esm.sh/numpy-ts@1.7.0"
 import { arr } from "https://gnlow.dev/util@0.1.2"
 
 export const daviesHarte =
-(w: number, h: number, kernel: (d: number) => number) => {
+(w: number, h: number, kernel: (d: number) => number, seed = 42) => {
+    np.random.seed(seed)
     const covData = arr(2*w).map(i => arr(2*h).map(j => {
         const dx = i <= w ? i : 2*w-i
         const dy = j <= h ? j : 2*h-j
