@@ -17,9 +17,8 @@ const terrain = Cmap.fromStops([
 
 const gen =
 (kernel: keyof typeof kernels) => {
-    const p32 = daviesHarte(256, 256, kernels[kernel](80))
-    
-    const plane = new FunPlane(256, 256, ([x, y]) => p32.get([x, y]))
+    const p32 = daviesHarte(512, 512, kernels[kernel](80))
+    const plane = p32.slice(`0:${512}`, `0:${256}`).toPlane()
     const png = plane.map(p => [
         ...terrain
             .at((1+Math.tanh(p as number / 2))/2),
