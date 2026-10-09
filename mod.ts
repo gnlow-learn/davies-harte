@@ -3,17 +3,15 @@ import { arr } from "https://gnlow.dev/util@0.1.2"
 import { FunPlane } from "https://gnlow.dev/plane@0.1.5"
 
 export const daviesHarte =
-(w: number, h: number, kernel: (d: number) => number, seed = 42) => {
+(dimension: number[], kernel: (d: number) => number, seed = 42) => {
     np.random.seed(seed)
 
-    w /= 2
-    h /= 2
-    const covData = arr(2*w).map(i => arr(2*h).map(j => {
-        const dx = i <= w ? i : 2*w-i
-        const dy = j <= h ? j : 2*h-j
-        const dist = Math.hypot(dx, dy)
-        return kernel(dist)
-    }))
+    const covData = np.fromfunction((...cs) => {
+        const ds = cs.map((c, i) =>
+            c <= dimension[i]/2 ? c : dimension[i]-c
+        )
+        return kernel(Math.hypot(...ds))
+    }, dimension)
     const covGrid = np.array(covData)
 
     const covFft = np.fft.fft2(covGrid)
@@ -21,7 +19,7 @@ export const daviesHarte =
     const safeCov = np.clip(realCov, 0, null)
     const sqrtCov = np.sqrt(safeCov)
     
-    const noise = np.random.normal(0, 1, [2*w, 2*h]) as np.NDArray<"float32">
+    const noise = np.random.normal(0, 1, dimension) as np.NDArray<"float32">
     const noiseFft = np.fft.fft2(noise)
 
     const filteredFft = np.multiply(noiseFft, sqrtCov)
