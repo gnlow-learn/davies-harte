@@ -17,8 +17,12 @@ const terrain = Cmap.fromStops([
 
 const gen =
 (kernel: keyof typeof kernels) => {
-    const p32 = daviesHarte([512, 512], kernels[kernel](80))
-    const plane = p32.slice(`0:${512}`, `0:${256}`).toPlane()
+    const p32 = daviesHarte([400, 400, 400], kernels[kernel](80))
+    const plane = p32.equirect({
+        center: [200, 200, 200],
+        radius: 200,
+        res: [360, 180],
+    }).toPlane()
     const png = plane.map(p => [
         ...terrain
             .at((1+Math.tanh(p as number / 2))/2),
